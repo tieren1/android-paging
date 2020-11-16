@@ -17,6 +17,7 @@
 package com.example.android.codelabs.paging.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
@@ -29,6 +30,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import com.example.android.codelabs.paging.Injection
 import com.example.android.codelabs.paging.databinding.ActivitySearchRepositoriesBinding
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
@@ -90,6 +92,10 @@ class SearchRepositoriesActivity : AppCompatActivity() {
             binding.progressBar.isVisible = loadState.source.refresh is LoadState.Loading
             // Show the retry state if initial load or refresh fails.
             binding.retryButton.isVisible = loadState.source.refresh is LoadState.Error
+            // Show swipeToRefresh
+            binding.srlLayout.isRefreshing = loadState.refresh is LoadState.Loading
+
+            Log.d("SearchRepoActivity", "loadStateListener current state: $loadState")
 
             // Toast on any error, regardless of whether it came from RemoteMediator or PagingSource
             val errorState = loadState.source.append as? LoadState.Error
@@ -103,6 +109,12 @@ class SearchRepositoriesActivity : AppCompatActivity() {
                         Toast.LENGTH_LONG
                 ).show()
             }
+        }
+
+        binding.srlLayout.setOnRefreshListener {
+            // Swipe to refresh
+            binding.srlLayout.isRefreshing = true
+            adapter.refresh()
         }
 
     }

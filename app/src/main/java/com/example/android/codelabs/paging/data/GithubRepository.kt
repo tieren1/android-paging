@@ -45,7 +45,7 @@ class GithubRepository(
         val pagingSourceFactory = { database.reposDao().reposByName(dbQuery) }
 
         return Pager(
-                config = PagingConfig(pageSize = NETWORK_PAGE_SIZE, enablePlaceholders = false),
+                config = PagingConfig(pageSize = 10, enablePlaceholders = false, prefetchDistance = 1, initialLoadSize = 10),
                 remoteMediator = GithubRemoteMediator(
                         query,
                         service,
