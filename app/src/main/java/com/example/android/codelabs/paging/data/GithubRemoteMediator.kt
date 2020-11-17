@@ -40,7 +40,6 @@ class GithubRemoteMediator(
         private val service: GithubService,
         private val repoDatabase: RepoDatabase
 ) : RemoteMediator<Int, Repo>() {
-    private var firstLoad = false
 
     override suspend fun load(loadType: LoadType, state: PagingState<Int, Repo>): MediatorResult {
 
@@ -85,26 +84,19 @@ class GithubRemoteMediator(
             val endOfPaginationReached = repos.isEmpty()
             repoDatabase.withTransaction {
                 // clear all tables in the database
-//                if (loadType == LoadType.REFRESH) {
-//                    repoDatabase.remoteKeysDao().clearRemoteKeys()
-//                    repoDatabase.reposDao().clearRepos()
-//                }
+                if (loadType == LoadType.REFRESH) {
+                    repoDatabase.remoteKeysDao().clearRemoteKeys()
+                    repoDatabase.reposDao().clearRepos()
+                }
                 val prevKey = if (page == GITHUB_STARTING_PAGE_INDEX) null else page - 1
                 val nextKey = if (endOfPaginationReached) null else page + 1
                 val keys = repos.map {
                     RemoteKeys(repoId = it.id, prevKey = prevKey, nextKey = nextKey)
                 }
                 repoDatabase.remoteKeysDao().insertAll(keys)
-
-                // only insert during first load
-                if (loadType == LoadType.REFRESH && firstLoad) {
-                    return@withTransaction MediatorResult.Success(endOfPaginationReached = true)
-                }
-
                 repoDatabase.reposDao().insertAll(repos)
-                firstLoad = true
             }
-            return MediatorResult.Success(endOfPaginationReached = true)
+            return MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
         } catch (exception: IOException) {
             return MediatorResult.Error(exception)
         } catch (exception: HttpException) {
