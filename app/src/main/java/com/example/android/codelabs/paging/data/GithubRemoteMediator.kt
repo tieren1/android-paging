@@ -40,7 +40,7 @@ class GithubRemoteMediator(
         private val service: GithubService,
         private val repoDatabase: RepoDatabase
 ) : RemoteMediator<Int, Repo>() {
-    private var firstLoad = false
+    private var firstLoad = true
 
     override suspend fun load(loadType: LoadType, state: PagingState<Int, Repo>): MediatorResult {
 

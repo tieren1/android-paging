@@ -49,7 +49,9 @@ class SearchRepositoriesActivity : AppCompatActivity() {
         searchJob?.cancel()
         searchJob = lifecycleScope.launch {
             viewModel.searchRepo(query).collectLatest {
-                adapter.submitData(it)
+                adapter.submitData(it).also {
+                    binding.srlLayout.isRefreshing = false
+                }
             }
         }
     }
@@ -93,7 +95,7 @@ class SearchRepositoriesActivity : AppCompatActivity() {
             // Show the retry state if initial load or refresh fails.
             binding.retryButton.isVisible = loadState.source.refresh is LoadState.Error
             // Show swipeToRefresh
-            binding.srlLayout.isRefreshing = loadState.refresh is LoadState.Loading
+//            binding.srlLayout.isRefreshing = loadState.refresh is LoadState.Loading
 
             Log.d("SearchRepoActivity", "loadStateListener current state: $loadState")
 
